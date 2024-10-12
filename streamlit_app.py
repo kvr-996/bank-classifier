@@ -8,13 +8,15 @@ import nltk
 # Ensure stopwords are downloaded
 nltk.download('stopwords')
 nltk.download('punkt_tab')
-# Load the trained model and TF-IDF vectorizer
-with open('voting_classifier_model.pkl', 'rb') as file:
-    voting_clf = pickle.load(file)
-
-with open('tfidf_vectorizer.pkl', 'rb') as file:
-    tfidf = pickle.load(file)
-
+# Load the trained model and TF-IDF vectorizer with error handling
+try:
+    with open('voting_classifier_model.pkl', 'rb') as file:
+        voting_clf = pickle.load(file)
+    with open('tfidf_vectorizer.pkl', 'rb') as file:
+        tfidf = pickle.load(file)
+except Exception as e:
+    st.error(f"Error loading model or vectorizer: {e}")
+    st.stop()
 
 # Preprocess function (same as in training)
 def preprocess_text(text):
@@ -32,7 +34,6 @@ def preprocess_text(text):
     tokenized_words = word_tokenize(text.lower())  # Lowercase and tokenize
     tokenized_words = [ps.stem(word) for word in tokenized_words if word not in stop_words]  # Remove stopwords and stem
     return " ".join(tokenized_words)
-
 
 # Streamlit app layout
 st.title("Consumer Complaint Classification App")
@@ -61,7 +62,6 @@ def plot_confidence_scores(confidence_scores):
     plt.title("Confidence Scores by Category")
     st.pyplot(plt)
 
-
 if st.button("Classify"):
     if user_input:
         # Preprocess the input text
@@ -69,7 +69,8 @@ if st.button("Classify"):
         input_tfidf = tfidf.transform([processed_text]).toarray()  # Transform input to TF-IDF
 
         # Get probability predictions
-        prediction_probs = voting_clf.predict_proba(input_tfidf)[0]
+        with st.spinner("Classifying..."):
+            prediction_probs = voting_clf.predict_proba(input_tfidf)[0]
 
         # Map predictions to category names
         product_categories = ['Credit Card', 'Credit Reporting', 'Debt Collection', 'Mortgages and Loans', 'Retail Banking']
