@@ -7,7 +7,7 @@ import nltk
 
 # Ensure stopwords are downloaded
 nltk.download('stopwords')
-
+nltk.download('punkt_tab')
 # Load the trained model and TF-IDF vectorizer
 with open('voting_classifier_model.pkl', 'rb') as file:
     voting_clf = pickle.load(file)
